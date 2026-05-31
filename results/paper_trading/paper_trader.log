@@ -1,0 +1,19 @@
+2026-05-31 20:14:17,471 INFO [global] ML model loaded (thr=0.42)
+2026-05-31 20:14:17,489 INFO [crypto] ML model loaded (thr=0.40)
+2026-05-31 20:14:17,489 INFO ============================================================
+2026-05-31 20:14:17,490 INFO PAPER TRADER STARTED
+2026-05-31 20:14:17,490 INFO Models: ['global', 'crypto']
+2026-05-31 20:14:17,490 INFO Poll interval: 300 seconds
+2026-05-31 20:14:17,490 INFO Dashboard: results/paper_trading/dashboard.html
+2026-05-31 20:14:17,490 INFO ============================================================
+2026-05-31 20:14:17,557 INFO ============================================================
+2026-05-31 20:14:17,557 INFO Starting cycle at 2026-05-31 14:44:17 UTC
+2026-05-31 20:14:17,557 INFO Fetching live data for 37 symbols...
+2026-05-31 20:16:06,343 INFO Updated 222 symbol/TF pairs from Binance
+2026-05-31 20:16:06,346 INFO [global] Building signals for 10 symbols...
+2026-05-31 20:16:08,399 INFO [global] 0 new signal(s) this cycle
+2026-05-31 20:16:08,399 INFO [crypto] Building signals for 39 symbols...
+2026-05-31 20:16:16,297 INFO [crypto] 0 new signal(s) this cycle
+2026-05-31 20:16:31,419 INFO Dashboard updated → results/paper_trading/dashboard.html
+2026-05-31 20:16:31,420 INFO [global] Capital=$10000.00 (+0.0%) | Open=0 | Trades=0 | WR=0%
+2026-05-31 20:16:31,420 INFO [crypto] Capital=$10000.00 (+0.0%) | Open=0 | Trades=0 | WR=0%
