@@ -1,0 +1,237 @@
+active_strategy: plan_c_ict
+plan_c_ict:
+  # ── Trading universe ─────────────────────────────────────────────────────────
+  # Active symbols for live backtest/paper trading.
+  # Binance USDT pairs only — must have 5m data in cache.
+  symbols: [BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT, DOGEUSDT, SUIUSDT, NEARUSDT, ONDOUSDT, ZECUSDT]
+
+  # ── ML training universe ─────────────────────────────────────────────────────
+  # empty = auto-detect all symbols in cache that have all required TFs.
+  # After running scripts/fetch_universe.py, the trainer will pick up:
+  #   - Top-20 crypto (Binance, all ICT TFs)
+  #   - Gold: GOLD (GC=F COMEX futures via yfinance, nearly 24h — full ICT TFs)
+  #   - Silver: SILVER (SI=F COMEX futures via yfinance, full ICT TFs)
+  #   - Indian indices: NIFTY50, NIFTY200, SENSEX, NIFTYBANK (yfinance, 1w/1d/1h)
+  #   - Top-50 NIFTY stocks: RELIANCE, HDFCBANK, TCS, INFY, etc. (yfinance, 1w/1d/1h)
+  # Note: 4h for yfinance assets is resampled from 1h (no native 4h in yfinance).
+  # Note: Indian market hours 09:15–15:30 IST; killzone = 'none' in ML features.
+  #       COMEX Gold/Silver are nearly 24h — London/NY killzones apply normally.
+  training_symbols: []      # empty = auto-detect all available symbols in cache
+
+  # ── Strategy parameters ──────────────────────────────────────────────────────
+  ltf: 5m
+  swing_window_d: 3
+  swing_window_w: 2
+  swing_window_h4: 4
+  swing_window_h1: 4
+  swing_window_m30: 4          # 30m T2.5 intermediate zone window
+  swing_window_m15: 5
+  choch_lookback: 45
+  sweep_lookback: 18
+  atr_period: 14
+  impulse_mult: 1.8
+  min_fvg_atr: 0.3
+  tp1_rr: 4.0               # TP1 risk:reward (e.g. 4.0 = 1:4, 5.0 = 1:5, 6.0 = 1:6)
+  confidence_threshold: 0.45
+  ml_threshold: 0.42        # ML win-probability gate — set 0.0 to disable
+
+# ── Segment-specific model configs ───────────────────────────────────────────
+# Each segment uses the same ICT pipeline but tuned for that market's volatility.
+# Run: python scripts/run_ml_train_segments.py --segment crypto
+
+plan_c_ict_crypto:
+  # Top-50 Binance crypto — 5m execution, full 2-year history
+  ltf: 5m
+  market: crypto
+  zone_gate: ob_only          # strict: only trade when price inside 4H/1H OB
+  impulse_mult: 1.8          # strong impulse required (high-vol market)
+  min_fvg_atr: 0.30
+  swing_window_h4: 4
+  swing_window_h1: 4
+  swing_window_m30: 4
+  swing_window_m15: 5
+  choch_lookback: 45
+  sweep_lookback: 18
+  atr_period: 14
+  tp1_rr: 4.0
+  confidence_threshold: 0.45
+  ml_threshold: 0.42
+  model_path: models/ict_predictor_crypto.pkl
+
+plan_c_ict_commodity:
+  # COMEX/NYMEX futures — 1h execution, London/NY killzones
+  # Target: 2000+ signals. Lower impulse + threshold for futures volatility.
+  ltf: 1h
+  market: commodity
+  zone_gate: all_zones        # use FVG, Breaker, Rejection, VI — needed for 2000 signals
+  impulse_mult: 0.5          # Futures: lower volatility, smaller impulse acceptable
+  min_fvg_atr: 0.08          # Allow smaller FVGs
+  swing_window_h4: 4
+  swing_window_h1: 4
+  swing_window_m30: 5
+  swing_window_m15: 5
+  choch_lookback: 30
+  sweep_lookback: 15
+  atr_period: 14
+  tp1_rr: 4.0                # 1:4 minimum as required
+  confidence_threshold: 0.28  # Lower gate to collect more signals
+  ml_threshold: 0.30    # optimal: +130.8% return, 44% WR (beats rules-only +101%)
+  model_path: models/ict_predictor_commodity.pkl
+
+plan_c_ict_india_equity:
+  # NSE NIFTY 50 stocks — 1h execution, IST killzones
+  # Target: 2000+ signals from 49 stocks × 720 days 1h data
+  ltf: 5m
+  market: india
+  zone_gate: all_zones
+  impulse_mult: 0.5          # Indian stocks: calm price action, small impulse OK
+  min_fvg_atr: 0.06
+  swing_window_h4: 4
+  swing_window_h1: 4
+  swing_window_m30: 5
+  swing_window_m15: 5
+  choch_lookback: 30
+  sweep_lookback: 12
+  atr_period: 14
+  tp1_rr: 4.0                # 1:4 minimum
+  confidence_threshold: 0.25  # Lower gate for data collection
+  ml_threshold: 0.40
+  model_path: models/ict_predictor_india_equity.pkl
+
+plan_c_ict_india_index:
+  # NIFTY 50, SENSEX, NIFTY Bank — 1h execution, IST killzones
+  ltf: 1h
+  market: india
+  zone_gate: all_zones
+  impulse_mult: 0.4          # Indices: very smooth, low impulse threshold
+  min_fvg_atr: 0.05
+  swing_window_h4: 4
+  swing_window_h1: 4
+  swing_window_m30: 5
+  swing_window_m15: 5
+  choch_lookback: 30
+  sweep_lookback: 12
+  atr_period: 14
+  tp1_rr: 4.0
+  confidence_threshold: 0.22
+  ml_threshold: 0.38
+  model_path: models/ict_predictor_india_index.pkl
+
+plan_c_ict_forex:
+  # 20 Major/cross Forex pairs — 1h execution, London/NY killzones
+  # Target: 2000+ signals. Forex is clean ICT structure, lower threshold works.
+  ltf: 5m
+  market: forex
+  zone_gate: all_zones
+  impulse_mult: 0.5          # Forex: pips-based moves, 0.5×ATR impulse fine
+  min_fvg_atr: 0.08
+  swing_window_h4: 4
+  swing_window_h1: 4
+  swing_window_m30: 5
+  swing_window_m15: 5
+  choch_lookback: 30
+  sweep_lookback: 15
+  atr_period: 14
+  tp1_rr: 4.0                # 1:4 minimum
+  confidence_threshold: 0.28
+  ml_threshold: 0.25    # optimal: +15.3% return, 37% WR (beats rules-only +11.4%)
+  model_path: models/ict_predictor_forex.pkl
+
+plan_a_swing:
+  ema_period: 50
+  swing_window: 3
+  ob_impulse_mult: 1.5
+  fvg_min_atr: 0.3
+  proximity_atr: 3.0
+  n_period: 20
+  vol_pct_thresh: 90
+  body_ratio_thresh: 0.5
+  sweep_lookback: 4
+  atr_k: 2.0
+  conf_threshold: 0.6
+plan_b_scalp:
+  ema_period: 50
+  swing_window: 5
+  ob_impulse_mult: 1.2
+  fvg_min_atr: 0.2
+  proximity_atr: 1.5
+  n_period: 20
+  vol_pct_thresh: 90
+  body_ratio_thresh: 0.5
+  sweep_lookback: 6
+  atr_k: 1.25
+  conf_threshold: 0.55
+exchange: binance
+symbols:
+- BTCUSDT
+- ETHUSDT
+ltf: 15m
+htf: 4h
+data:
+  cache_dir: cache/
+  lookback_days: 730
+  outlier_z_threshold: 5.0
+rules:
+  enabled: true
+  weight: 0.4
+  n_period: 20
+  atr_period: 14
+  atr_k: 2.0
+  vol_window: 20
+  vol_pct_thresh: 90
+  ema_period: 50
+  body_ratio_thresh: 0.5
+  confidence_threshold: 0.7
+  sweep_lookback: 4
+quant:
+  enabled: true
+  weight: 0.35
+  mean_reversion:
+    enabled: true
+    zscore_window: 20
+    zscore_entry_thresh: 2.0
+    zscore_exit_thresh: 0.5
+    bb_period: 20
+    bb_std: 2.0
+  regime:
+    enabled: true
+    n_states: 2
+    lookback: 200
+  microstructure:
+    enabled: true
+    kyle_window: 20
+    amihud_window: 20
+  momentum:
+    enabled: true
+    tsm_lookback: 120
+    tsm_short_window: 20
+  correlation:
+    enabled: true
+    corr_window: 60
+    corr_filter_thresh: 0.7
+ml:
+  enabled: false
+  weight: 0.25
+  supervised:
+    enabled: false
+    model: xgboost
+    retrain_days: 90
+    min_train_samples: 200
+  rl:
+    enabled: false
+    algorithm: ppo
+    timesteps: 500000
+    retrain_days: 30
+  llm:
+    enabled: false
+    model: claude-sonnet-4-6
+    report_on: backtest_end
+fusion:
+  method: weighted_average
+  final_threshold: 0.65
+risk:
+  initial_capital: 10000
+  risk_pct_per_trade: 0.01
+  max_drawdown_pct: 0.1
+  partial_exit_rr: 4.0
+  trail_atr_mult: 1.0

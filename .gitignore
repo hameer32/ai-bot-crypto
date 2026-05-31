@@ -1,0 +1,11 @@
+cache/
+logs/
+ml/models/
+results/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+dist/
+.DS_Store

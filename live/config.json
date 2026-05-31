@@ -1,0 +1,31 @@
+{
+  "models": {
+    "global": {
+      "name": "Global Model (ICT + ML)",
+      "model_path": "models/ict_predictor.pkl",
+      "config_key": "plan_c_ict",
+      "ml_threshold": 0.42,
+      "symbols": ["BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT","XRPUSDT","DOGEUSDT","SUIUSDT","NEARUSDT","ONDOUSDT","ZECUSDT"],
+      "starting_capital": 10000.0,
+      "risk_pct": 0.01,
+      "color": "#2196F3"
+    },
+    "crypto": {
+      "name": "Crypto Segment Model",
+      "model_path": "models/ict_predictor_crypto.pkl",
+      "config_key": "plan_c_ict_crypto",
+      "ml_threshold": 0.40,
+      "symbols": ["BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT","XRPUSDT","DOGEUSDT","SUIUSDT","NEARUSDT","ONDOUSDT","ZECUSDT","AAVEUSDT","ADAUSDT","ARUSDT","AVAXUSDT","BCHUSDT","DASHUSDT","DOTUSDT","ENAUSDT","FETUSDT","FILUSDT","HBARUSDT","ICPUSDT","INJUSDT","LINKUSDT","LTCUSDT","PAXGUSDT","PEPEUSDT","RENDERUSDT","SAGAUSDT","SEIUSDT","TAOUSDT","TONUSDT","TRUMPUSDT","TRXUSDT","UNIUSDT","WLDUSDT","XLMUSDT","XRPUSDT","ZECUSDT"],
+      "starting_capital": 10000.0,
+      "risk_pct": 0.01,
+      "color": "#4CAF50"
+    }
+  },
+  "timeframes": ["1w", "1d", "4h", "1h", "15m", "5m"],
+  "live_bars_per_tf": {"1w": 52, "1d": 200, "4h": 200, "1h": 500, "15m": 200, "5m": 200},
+  "poll_interval_seconds": 300,
+  "dashboard_path": "results/paper_trading/dashboard.html",
+  "trades_dir": "results/paper_trading",
+  "max_drawdown_pct": 0.10,
+  "started": null
+}
